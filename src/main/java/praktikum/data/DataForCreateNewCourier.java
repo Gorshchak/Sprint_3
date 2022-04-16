@@ -48,8 +48,7 @@ public class DataForCreateNewCourier {
         return new DataForCreateNewCourier().setPassword(RandomStringUtils.randomAlphabetic(DATA_SIZE));
     }
 
-    public static DataForCreateNewCourier getWithLoginAndPasswordOnly() {
-        return new DataForCreateNewCourier().setLogin(RandomStringUtils.randomAlphabetic(DATA_SIZE))
-                .setPassword(RandomStringUtils.randomAlphabetic(DATA_SIZE));
+    public static DataForCreateNewCourier getWithFirstNameOnly() {
+        return new DataForCreateNewCourier().setFirstName(RandomStringUtils.randomAlphabetic(DATA_SIZE));
     }
 }

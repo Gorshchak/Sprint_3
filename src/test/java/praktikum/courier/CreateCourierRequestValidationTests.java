@@ -3,24 +3,19 @@ package praktikum.courier;
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.ValidatableResponse;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import praktikum.client.CourierClient;
-import praktikum.data.CourierCredentials;
 import praktikum.data.DataForCreateNewCourier;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-;
+import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
 public class CreateCourierRequestValidationTests {
 
     private CourierClient courierClient;
-    private int courierId;
     DataForCreateNewCourier courier;
     private int expectedStatus;
     private String expectedErrorTextMessage;
@@ -33,23 +28,16 @@ public class CreateCourierRequestValidationTests {
 
     @Parameterized.Parameters
     public static Object[][] getTestData() {
-        return new Object[][] {
+        return new Object[][]{
                 {DataForCreateNewCourier.getWithLoginOnly(), 400, "Недостаточно данных для создания учетной записи"},
                 {DataForCreateNewCourier.getWithPasswordOnly(), 400, "Недостаточно данных для создания учетной записи"},
-                {DataForCreateNewCourier.getWithLoginAndPasswordOnly() , 201, null}
+                {DataForCreateNewCourier.getWithFirstNameOnly(), 400, "Недостаточно данных для создания учетной записи"}
         };
     }
 
     @Before
     public void setUp() {
         courierClient = new CourierClient();
-    }
-
-    @After
-    public void tearDown() {
-        if (courierId != 0) {
-            courierClient.delete(courierId);
-        }
     }
 
     @Test
@@ -61,15 +49,10 @@ public class CreateCourierRequestValidationTests {
     public void createCouriersWithoutFields() {
 
         ValidatableResponse response = courierClient.create(courier);
-
         int statusCode = response.extract().statusCode();
         String errorTextMessage = response.extract().path("message");
-
-        if(statusCode == 201) {
-            courierId = courierClient.login(new CourierCredentials(courier.login, courier.password)).extract().path("id");
-        }
-
-        assertThat(statusCode, equalTo(expectedStatus));
-        assertThat(errorTextMessage, equalTo(expectedErrorTextMessage));
+        assertEquals("Некорректный код статуса", expectedStatus, statusCode);
+        assertEquals("Некорректное сообщение об ошибке", expectedErrorTextMessage, errorTextMessage);
     }
+
 }

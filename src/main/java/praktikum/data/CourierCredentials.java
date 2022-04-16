@@ -26,6 +26,10 @@ public class CourierCredentials {
         return this;
     }
 
+    public static CourierCredentials from(DataForCreateNewCourier courier) {
+        return new CourierCredentials(courier.login, courier.password);
+    }
+
     public static CourierCredentials getWithLoginOnly(DataForCreateNewCourier courier) {
         return new CourierCredentials().setLogin(courier.login);
     }
@@ -34,7 +38,7 @@ public class CourierCredentials {
         return new CourierCredentials().setPassword(courier.password);
     }
 
-    public static CourierCredentials getWithDoNotReallyLoginAndPassword(DataForCreateNewCourier courier) {
+    public static CourierCredentials getWithDoNotReallyLoginAndPassword() {
         return new CourierCredentials().setLogin(RandomStringUtils.randomAlphabetic(DATA_SIZE))
                 .setPassword(RandomStringUtils.randomAlphabetic(DATA_SIZE));
     }

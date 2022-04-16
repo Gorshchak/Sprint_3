@@ -3,6 +3,7 @@ package praktikum.courier;
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.ValidatableResponse;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -12,6 +13,7 @@ import praktikum.data.DataForCreateNewCourier;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
 
 
 @RunWith(Parameterized.class)
@@ -22,6 +24,12 @@ public class LoginCourierRequestValidationTests {
     private CourierCredentials courierCredentials;
     private int expectedStatus;
     private String expectedErrorTextMessage;
+    private int courierId;
+
+    @After
+    public void tearDown() {
+        courierClient.delete(courierId);
+    }
 
     public LoginCourierRequestValidationTests(CourierCredentials courierCredentials, int expectedStatus, String expectedErrorTextMessage) {
         this.courierCredentials = courierCredentials;
@@ -34,7 +42,7 @@ public class LoginCourierRequestValidationTests {
         return new Object[][] {
                 {CourierCredentials.getWithLoginOnly(courier), 400, "Недостаточно данных для входа"},
                 {CourierCredentials.getWithPasswordOnly(courier), 400, "Недостаточно данных для входа"},
-                {CourierCredentials.getWithDoNotReallyLoginAndPassword(courier) , 404, "Учетная запись не найдена"}
+                {CourierCredentials.getWithDoNotReallyLoginAndPassword() , 404, "Учетная запись не найдена"},
         };
     }
 
@@ -46,14 +54,13 @@ public class LoginCourierRequestValidationTests {
             "3. With do not really login and password fields")
     public void loginCouriersWithoutFields() {
 
-        ValidatableResponse validatableResponse = courierClient.create(courier);
-
-        ValidatableResponse response = courierClient.login(courierCredentials);
-
-        int statusCode = response.extract().statusCode();
-        String errorTextMessage = response.extract().path("message");
-
-        assertThat(statusCode, equalTo(expectedStatus));
-        assertThat(errorTextMessage, equalTo(expectedErrorTextMessage));
+        courierClient.create(courier);
+        ValidatableResponse response = courierClient.login(CourierCredentials.from(courier));
+        courierId = response.extract().path("id");
+        ValidatableResponse errorResponse = courierClient.login(courierCredentials);
+        int statusCode = errorResponse.extract().statusCode();
+        assertThat("Некорректный код статуса", statusCode, equalTo(expectedStatus));
+        String errorMessage = errorResponse.extract().path("message");
+        assertEquals("Некорректное сообщение об ошибке", expectedErrorTextMessage, errorMessage);
     }
 }
